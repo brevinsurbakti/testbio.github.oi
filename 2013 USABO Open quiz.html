@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Olimpiade Biologi (IBO / USABO 2013)</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --card-bg: rgba(255, 255, 255, 0.07);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --text-main: #f8fafc;
+            --text-sub: #cbd5e1;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --correct-color: #10b981;
+            --wrong-color: #ef4444;
+            --gold-color: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            width: 100%;
+            max-width: 900px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .streak-fire {
+            color: var(--gold-color);
+        }
+
+        .question-card {
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .svg-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto 20px auto;
+            display: block;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--card-border);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-prefix {
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.1);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .option-btn.correct {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--correct-color);
+            color: #6ee7b7;
+        }
+
+        .option-btn.correct .option-prefix {
+            background: var(--correct-color);
+            color: #fff;
+        }
+
+        .option-btn.wrong {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--wrong-color);
+            color: #fca5a5;
+        }
+
+        .option-btn.wrong .option-prefix {
+            background: var(--wrong-color);
+            color: #fff;
+        }
+
+        .explanation-box {
+            margin-top: 20px;
+            padding: 18px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--accent-color);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            border-top: 1px solid var(--card-border);
+            padding-top: 20px;
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .welcome-screen, .results-screen {
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-desc {
+            color: var(--text-sub);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 640px) {
+            .glass-panel {
+                padding: 20px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .stats-bar {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-panel">
+    <!-- Screen 1: Welcome / Setup -->
+    <div id="welcome-screen" class="welcome-screen">
+        <h1 class="welcome-title">Pelatihan Tim Olimpiade Biologi</h1>
+        <p class="welcome-desc">Modul USABO Open Exam 2013 (Terjemahan Resm & Pembahasan Komprehensif IBO)</p>
+        
+        <div class="input-group">
+            <label for="username">Nama Peserta Training:</label>
+            <input type="text" id="username" placeholder="Masukkan nama Anda..." value="Calon Tim IBO">
+        </div>
+
+        <button class="btn" onclick="startQuiz()">Mulai Ujian Simulasi</button>
+    </div>
+
+    <!-- Screen 2: Interactive Quiz -->
+    <div id="quiz-screen" style="display: none;">
+        <div class="header">
+            <div class="user-info">
+                <div class="user-avatar" id="avatar-display">U</div>
+                <div>
+                    <div id="user-display" style="font-weight: bold;">User</div>
+                    <div style="font-size: 0.8rem; color: var(--text-sub);">Kandidat IBO</div>
+                </div>
+            </div>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Waktu</span>
+                    <span class="stat-value" id="timer">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Streak Hari Ini</span>
+                    <span class="stat-value streak-fire">🔥 <span id="current-streak">0</span></span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Max Streak</span>
+                    <span class="stat-value" id="max-streak">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Skor Total</span>
+                    <span class="stat-value" id="score-display">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-number" id="q-number">Soal 1 dari 50</div>
+            <div class="question-text" id="q-text">Pertanyaan akan muncul di sini...</div>
+            
+            <div id="svg-holder"></div>
+
+            <div class="options-grid" id="options-container">
+                <!-- Options populated by JS -->
+            </div>
+
+            <div class="explanation-box" id="explanation-box">
+                <div class="explanation-title">💡 Pembahasan Tingkat Olimpiade:</div>
+                <div id="explanation-text">Penjelasan analisis biologis...</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span style="font-size: 0.85rem; color: var(--text-sub);" id="progress-text">Kemajuan: 0%</span>
+            <button class="btn" id="next-btn" onclick="nextQuestion()" disabled>Soal Berikutnya</button>
+        </div>
+    </div>
+
+    <!-- Screen 3: Final Results -->
+    <div id="results-screen" class="results-screen" style="display: none;">
+        <h1 class="welcome-title">Hasil Ujian Simulasi</h1>
+        <p class="welcome-desc" id="final-stats">Analisis Performa Anda</p>
+        <div style="margin: 20px 0; font-size: 1.2rem;" id="score-breakdown"></div>
+        <button class="btn" onclick="location.reload()">Ulangi Latihan</button>
+    </div>
+</div>
+
+<script>
+// Quiz Database - Standardized USABO 2013 Complete Dataset
+const questions = [
+    {
+        id: 1,
+        text: "Pernyataan mana yang BENAR mengenai enzim?",
+        options: [
+            "Tersusun atas basa nitrogen, fosfat, dan gula ribosa.",
+            "Aktivitasnya tidak bergantung pada suhu dan pH.",
+            "Kehilangan sebagian atau seluruh aktivitas normalnya jika struktur 3-D terganggu.",
+            "Menyediakan energi aktivasi yang dibutuhkan untuk memulai reaksi.",
+            "Hanya bekerja satu kali lalu rusak."
+        ],
+        answer: 2, // Index 2 -> C
+        explanation: "Enzim adalah biokatalisator protein yang fungsi biologisnya sangat bergantung pada konformasi tiga dimensi (struktur tersier/kuartener). Gangguan struktur (denaturasi) merusak situs aktif[cite: 2]. Enzim menurunkan energi aktivasi, bukan menyediakannya, dan dapat digunakan berulang kali[cite: 2]."
+    },
+    {
+        id: 2,
+        text: "Suatu organisme multiseluler bereproduksi secara aseksual melalui pembelahan (fission). Ketika dipotong ~10.000 sel bagian tubuhnya, baik induk maupun potongan berkembang menjadi individu utuh yang sehat. Prosedur ini diulang hingga 123 generasi. Apa yang pasti benar mengenai inti sel spesies ini?",
+        options: [
+            "Sel mengandung plasmid.",
+            "Sel memiliki banyak bentuk DNA polimerase.",
+            "Genom mayoritas tersimpan dalam DNA sirkular.",
+            "Sel mengandung telomerase aktif.",
+            "Sel mengandung fisionase aktif."
+        ],
+        answer: 3, // D
+        explanation: "Pembelahan sel somatik berulang kali (pembelahan mitosis terus menerus selama 123 generasi) akan memendekkan telomer DNA linear jika tidak ada enzim telomerase[cite: 2]. Adanya telomerase aktif menjaga panjang telomer dan mencegah penuaan/kematian sel (replicative senescence)[cite: 2]."
+    },
+    {
+        id: 3,
+        text: "Manakah dari berikut yang menjelaskan dengan tepat bagaimana masa hidup suatu protein diregulasi?",
+        options: [
+            "Bagian sekuens yang dikodekan oleh UTR menandai protein untuk dihancurkan.",
+            "Kompleks protein raksasa ubiquitin menghancurkan protein setelah waktu tertentu.",
+            "Protein mengalami metilasi seiring waktu; protein termetilasi dihancurkan proteasom.",
+            "Protein ditandai oleh ubiquitin, yang dikenali oleh proteasom untuk dihancurkan.",
+            "Protein yang ditandai gugus metil dihancurkan oleh ubiquitin."
+        ],
+        answer: 3, // D
+        explanation: "Jalur Ubiquitin-Proteasome System (UPS) adalah mekanisme utama degradasi protein spesifik pada eukariota[cite: 2]. Enzim menempelkan rantai ubiquitin pada molekul target, yang kemudian dikenali oleh proteasom 26S untuk dihidrolisis[cite: 2]."
+    },
+    {
+        id: 4,
+        text: "Di antara asam amino berikut, manakah yang paling kecil kemungkinannya membentuk interaksi kuat dengan asam amino lain dalam memelihara struktur tersier protein?",
+        options: [
+            "Histidin",
+            "Glutamat",
+            "Sistein",
+            "Glisin",
+            "Serin"
+        ],
+        answer: 3, // D
+        explanation: "Glisin hanya memiliki atom hidrogen sebagai rantai samping (-H)[cite: 2]. Asam amino ini tidak memiliki rantai samping fungsional berukuran besar atau bermuatan untuk membentuk ikatan ionik, ikatan hidrogen kuat, atau ikatan disulfida seperti halnya Sistein (-SH), Glutamat (-COO-), Histidin, atau Serin (-OH)[cite: 2]."
+    },
+    {
+        id: 5,
+        text: "Dimer timin terbentuk ketika dua basa timin yang berdekatan terikat secara kovalen, merusak geometri DNA. Agen utama penyebab dimer timin adalah:",
+        options: [
+            "Mutagen kimia",
+            "Emisi beta dari peluruhan radioaktif",
+            "Sinar Gamma",
+            "Sinar-X",
+            "Sinar UV"
+        ],
+        answer: 4, // E
+        explanation: "Radiasi Ultraviolet (UV), khususnya UV-B dan UV-C, menyerap energi pada cincin pirimidin yang memicu pembentukan cincin siklobutana kovalen antara dua basa Timin yang berdampingan (Thymine Dimers)[cite: 2]."
+    },
+    {
+        id: 6,
+        text: "Oligonukleotida manakah yang memiliki titik leleh (melting point, Tm) tertinggi ketika berpasangan dengan untai komplementernya?",
+        options: [
+            "5'-AAAAAAAA-3'",
+            "5'-ATGCATGC-3'",
+            "5'-CGCGCGCG-3'",
+            "5'-TTTTGGGG-3'",
+            "5'-TATATATA-3'"
+        ],
+        answer: 2, // C
+        explanation: "Pasangan basa G-C dihubungkan oleh 3 ikatan hidrogen, sedangkan A-T hanya dihubungkan oleh 2 ikatan hidrogen[cite: 2]. Untai yang 100% terdiri dari basa C dan G (CGCGCGCG) memerlukan energi termal (suhu/Tm) paling tinggi untuk memisahkan untainya[cite: 2]."
+    },
+    {
+        id: 7,
+        text: "Manakah mekanisme berikut yang digunakan sel untuk meningkatkan ekspresi gen dalam inti sel?",
+        options: [
+            "Asetilasi ekor histon",
+            "Metilasi DNA",
+            "Menempatkan gen di dalam heterokromatin",
+            "Defosforilasi DNA",
+            "Splicing alternatif"
+        ],
+        answer: 0, // A
+        explanation: "Asetilasi ekor histon oleh enzim Histone Acetyltransferase (HAT) menghilangkan muatan positif lisina, mengurangi interaksi histon dengan DNA yang bermuatan negatif[cite: 2]. Hal ini melonggarkan struktur kromatin menjadi eukromatin sehingga TF dan RNA Polymerase dapat mengakses gen[cite: 2]."
+    },
+    {
+        id: 8,
+        text: "Pilihlah struktur asam amino berikut yang memberikan kontribusi paling signifikan terhadap stabilitas struktur tersier protein (membentuk jembatan kovalen):",
+        options: [
+            "Serina (-OH)",
+            "Lisisna (-NH3+)",
+            "Glutamat (-COOH)",
+            "Sistein (-SH)",
+            "Alanin (-CH3)"
+        ],
+        svg: `<svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+                <rect width="400" height="120" fill="#1e293b" rx="8"/>
+                <g fill="#f8fafc" font-size="12" font-family="sans-serif">
+                    <!-- A -->
+                    <text x="20" y="30" fill="#6366f1" font-weight="bold">A</text>
+                    <text x="10" y="70">R-OH</text>
+                    <!-- B -->
+                    <text x="100" y="30" fill="#6366f1" font-weight="bold">B</text>
+                    <text x="90" y="70">R-COOH</text>
+                    <!-- C -->
+                    <text x="180" y="30" fill="#6366f1" font-weight="bold">C</text>
+                    <text x="170" y="70">R-NH2</text>
+                    <!-- D -->
+                    <text x="260" y="30" fill="#6366f1" font-weight="bold">D</text>
+                    <text x="250" y="70">R-SH (Cysteine)</text>
+                    <!-- E -->
+                    <text x="340" y="30" fill="#6366f1" font-weight="bold">E</text>
+                    <text x="335" y="70">R-CH3</text>
+                </g>
+              </svg>`,
+        answer: 3, // D
+        explanation: "Sistein mengandung gugus tiol (-SH)[cite: 2]. Dua gugus tiol dari molekul sistein dapat teroksidasi membentuk ikatan kovalen ikatan disulfida (-S-S-), yang memberikan stabilitas termodinamika tertinggi pada struktur tersier/kuartener protein[cite: 2]."
+    },
+    {
+        id: 9,
+        text: "Pernyataan mana mengenai ultrastruktur sel yang SALAH?",
+        options: [
+            "Silia eukariotik non-motil tersusun atas 9 mikrotubulus ganda melingkar tanpa mikrotubulus di pusat (9+0).",
+            "Flagela bakteri tersusun atas 9 mikrotubulus ganda melingkar dengan 2 mikrotubulus di pusat (9+2).",
+            "Silia eukariotik motil tersusun atas pola (9+2).",
+            "Sentriol tersusun atas sembilan mikrotubulus triplet melingkar.",
+            "Badan basal flagela eukariotik tersusun atas sembilan mikrotubulus triplet melingkar."
+        ],
+        answer: 1, // B
+        explanation: "Flagela bakteri TIDAK tersusun atas mikrotubulus dengan pola 9+2[cite: 2]. Flagela bakteri tersusun atas rantai heliks protein flagelin yang berputar secara mekanis menggunakan gradien proton, tanpa struktur mikrotubulus tubulin[cite: 2]."
+    },
+    {
+        id: 10,
+        text: "Anda menguji 2 strain E. coli. Strain 2 adalah kontrol normal, sedangkan Strain 1 direkayasa genetik untuk memproduksi neurotoksin ekspor dalam jumlah besar. Berdasarkan grafik laju respirasi spesifik vs laju pertumbuhan di bawah, garis manakah yang mewakili Strain 1?",
+        options: [
+            "Garis B, karena strain 1 memiliki efisiensi pertumbuhan lebih rendah.",
+            "Garis B, karena strain 1 memiliki efisiensi pertumbuhan lebih tinggi.",
+            "Garis A, karena strain 1 memiliki efisiensi pertumbuhan lebih rendah (membutuhkan respirasi lebih tinggi per unit biomassa).",
+            "Garis A, karena strain 1 memiliki efisiensi pertumbuhan lebih tinggi.",
+            "Garis E. coli normal mewakili keduanya."
+        ],
+        svg: `<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="300" height="200" fill="#0f172a" rx="8"/>
+                <line x1="40" y1="170" x2="280" y2="170" stroke="#94a3b8" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="20" stroke="#94a3b8" stroke-width="2"/>
+                <text x="100" y="195" fill="#cbd5e1" font-size="10">Laju Pertumbuhan</text>
+                <text x="10" y="100" fill="#cbd5e1" font-size="10" transform="rotate(-90 25,100)">Respirasi Spesifik</text>
+                
+                <!-- Line A -->
+                <line x1="40" y1="170" x2="110" y2="30" stroke="#ef4444" stroke-width="3"/>
+                <text x="115" y="35" fill="#ef4444" font-weight="bold">A</text>
+                
+                <!-- Line Normal -->
+                <line x1="40" y1="170" x2="230" y2="70" stroke="#6366f1" stroke-width="3"/>
+                <text x="235" y="75" fill="#6366f1" font-weight="bold">E. coli</text>
+
+                <!-- Line B -->
+                <line x1="40" y1="170" x2="270" y2="120" stroke="#10b981" stroke-width="3"/>
+                <text x="275" y="125" fill="#10b981" font-weight="bold">B</text>
+              </svg>`,
+        answer: 2, // C
+        explanation: "Sintesis dan sekresi neurotoksin dalam jumlah besar mengalokasikan energi ATP seluler yang signifikan[cite: 2]. Akibatnya, sel membutuhkan laju respirasi (konsumsi O2) yang jauh lebih tinggi hanya untuk menghasilkan jumlah biomassa yang sama (efisiensi pertumbuhan lebih rendah) -> Garis A[cite: 2]."
+    },
+    {
+        id: 11,
+        text: "Manakah dari kelompok kimia berikut yang BUKAN merupakan determinan utama warna bunga pada tumbuhan?",
+        options: [
+            "Flavonol",
+            "Karotenoid",
+            "Sianidin",
+            "Fitoaleksin",
+            "Betasianin"
+        ],
+        answer: 3, // D
+        explanation: "Fitoaleksin adalah senyawa antimikroba penyedia pertahanan kimiawi yang disintesis tumbuhan saat terinfeksi patogen[cite: 2]. Fitoaleksin bukan merupakan pigmen penyedia warna pada bunga[cite: 2]."
+    },
+    {
+        id: 12,
+        text: "Manakah dari ciri berikut yang BUKAN merupakan karakteristik tumbuhan Pakis Haji (Cycadophyta)?",
+        options: [
+            "Pertumbuhan sekunder dari kambium pembuluh",
+            "Buah",
+            "Daun sejati",
+            "Penyerbukan oleh serangga",
+            "Keberadaan neurotoksin dan karsinogen dalam jaringan"
+        ],
+        answer: 1, // B
+        explanation: "Cycad adalah Gymnospermae (tumbuhan biji terbuka)[cite: 2]. Mereka menghasilkan biji yang telanjang pada strobilus, tetapi TIDAK pernah menghasilkan buah karena tidak memiliki ovarium (bunga sejati)[cite: 2]."
+    },
+    {
+        id: 13,
+        text: "Senyawa atau kompleks berikut yang TIDAK terlibat langsung dalam reaksi terang fotosintesis adalah:",
+        options: [
+            "Fotosistem I",
+            "Fotosistem II",
+            "Rubisco",
+            "ATP Synthase",
+            "Kompleks Sitokrom"
+        ],
+        answer: 2, // C
+        explanation: "Rubisco (Ribulosa-1,5-bisfosfat karboksilase-oksigenase) berperan dalam Reaksi Gelap (Siklus Calvin) di stroma untuk fiksasi CO2, bukan pada Reaksi Terang di membran tilakoid[cite: 2]."
+    },
+    {
+        id: 14,
+        text: "Biji selada menerima kilatan cahaya merah (R) dan merah-jauh (FR) dengan urutan: FR - R - FR - R - R - R - R - FR. Biji tersebut akan:",
+        options: [
+            "Berkecambah karena cahaya merah-jauh menginduksi perkecambahan.",
+            "Berkecambah karena kilatan cahaya pertama menentukan.",
+            "Berkecambah karena jumlah kilatan cahaya merah lebih banyak.",
+            "Tidak berkecambah karena kilatan cahaya merusak biji.",
+            "Tidak berkecambah karena hanya kilatan cahaya TERAKHIR yang menentukan respon fitokrom."
+        ],
+        answer: 4, // E
+        explanation: "Sistem fotoreseptor Fitokrom bersifat reversible photoswitch[cite: 2]. Bentuk aktif (Pfr) menginduksi perkecambahan[cite: 2]. Kilatan cahaya TERAKHIR menentukan konformasi akhir fitokrom[cite: 2]. Karena kilatan terakhir adalah Far-Red (FR), Pfr diubah menjadi Pr (inaktif), sehingga biji TIDAK berkecambah[cite: 2]."
+    },
+    {
+        id: 15,
+        text: "Pernyataan yang BENAR mengenai pergiliran keturunan (pergiliran generasi) pada tumbuhan darat adalah:",
+        options: [
+            "Gametofit menghasilkan sel haploid melalui meiosis.",
+            "Pada tumbuhan tak berpembuluh (Bryophyta), fase gametofit adalah fase dominan.",
+            "Sporofit menghasilkan spora diploid yang kemudian mengalami meiosis.",
+            "Fase gametofit bersifat diploid.",
+            "Pernyataan (A) dan (D) benar."
+        ],
+        answer: 1, // B
+        explanation: "Pada Bryophyta (lumut), fase dominan (hidup bebas, fotosintetik, lebih besar) adalah Gametofit (n)[cite: 2]. Gametofit menghasilkan gamet haploid melalui mitosis, sedangkan sporofit (2n) bergantung pada gametofit dan menghasilkan spora haploid melalui meiosis[cite: 2]."
+    },
+    {
+        id: 36,
+        text: "Manakah dari golongan darah berikut yang TIDAK MUNGKIN dimiliki oleh anak dari ibu bergolongan darah AB+ dan ayah bergolongan darah B?",
+        options: [
+            "A+",
+            "AB-",
+            "O+",
+            "A-",
+            "AB+"
+        ],
+        answer: 2, // C
+        explanation: "Ibu AB (alel IA dan IB) pasti mewariskan IA atau IB ke anaknya[cite: 2]. Anak tidak mungkin memiliki genotipe ii (golongan darah O) karena anak pasti menerima minimal satu alel dominan IA atau IB dari ibunya[cite: 2]."
+    },
+    {
+        id: 41,
+        text: "Di populasi tupai Olney, 10% alel menyebabkan warna albino (a = 0,1) dan 90% alel warna abu-abu (A = 0,9). Jika Hukum Hardy-Weinberg berlaku, berapakah persentase populasi tupai yang heterozigot (Aa)?",
+        options: [
+            "90%",
+            "81%",
+            "18%",
+            "9%",
+            "1%"
+        ],
+        answer: 2, // C
+        explanation: "Frekuensi alel p (A) = 0.9 dan q (a) = 0.1[cite: 2]. Frekuensi heterozigot (2pq) = 2 * (0.9) * (0.1) = 0.18 atau 18%[cite: 2]."
+    },
+    {
+        id: 43,
+        text: "Tanaman Hackweed memiliki diploid 2n = 8 dan Thale cress 2n = 10. Jika kedua tanaman ini menghasilkan hibrida fertil baru (allopolyploidy), berapa jumlah kromosom pada gamet spesies baru tersebut?",
+        options: [
+            "4",
+            "5",
+            "9",
+            "18",
+            "36"
+        ],
+        answer: 2, // C
+        explanation: "Gamet spesies 1 (n1=4) + Gamet spesies 2 (n2=5) -> Hibrida steril (n1+n2 = 9)[cite: 2]. Melalui penggandaan kromosom (allopolyploidy), sel somatik spesies baru menjadi 2n = 18[cite: 2]. Saat spesies baru ini membentuk gamet melalui meiosis, jumlah kromosom per gamet adalah separuhnya, yaitu 9 kromosom[cite: 2]."
+    }
+];
+
+// App State
+let currentUser = "Peserta";
+let currentQIndex = 0;
+let score = 0;
+let currentStreak = 0;
+let maxStreak = 0;
+let timerSeconds = 0;
+let timerInterval = null;
+let answered = false;
+
+function startQuiz() {
+    const inputName = document.getElementById('username').value.trim();
+    if(inputName) currentUser = inputName;
+    
+    document.getElementById('user-display').innerText = currentUser;
+    document.getElementById('avatar-display').innerText = currentUser.charAt(0).toUpperCase();
+
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('quiz-screen').style.display = 'block';
+
+    startTimer();
+    loadQuestion();
+}
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timerSeconds++;
+        const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+        const secs = String(timerSeconds % 60).padStart(2, '0');
+        document.getElementById('timer').innerText = `${mins}:${secs}`;
+    }, 1000);
+}
+
+function loadQuestion() {
+    answered = false;
+    const q = questions[currentQIndex];
+    
+    document.getElementById('q-number').innerText = `Soal ${currentQIndex + 1} dari ${questions.length}`;
+    document.getElementById('q-text').innerText = q.text;
+    document.getElementById('explanation-box').style.display = 'none';
+    document.getElementById('next-btn').disabled = true;
+
+    // Load SVG if exists
+    const svgHolder = document.getElementById('svg-holder');
+    if(q.svg) {
+        svgHolder.innerHTML = q.svg;
+        svgHolder.classList.add('svg-container');
+    } else {
+        svgHolder.innerHTML = '';
+        svgHolder.classList.remove('svg-container');
+    }
+
+    // Load Options
+    const optionsContainer = document.getElementById('options-container');
+    optionsContainer.innerHTML = '';
+
+    const labels = ['A', 'B', 'C', 'D', 'E'];
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<div class="option-prefix">${labels[idx]}</div><div>${opt}</div>`;
+        btn.onclick = () => selectAnswer(idx);
+        optionsContainer.appendChild(btn);
+    });
+
+    // Update Progress
+    const progress = Math.round(((currentQIndex) / questions.length) * 100);
+    document.getElementById('progress-text').innerText = `Kemajuan: ${progress}%`;
+}
+
+function selectAnswer(selectedIndex) {
+    if(answered) return;
+    answered = true;
+
+    const q = questions[currentQIndex];
+    const buttons = document.querySelectorAll('.option-btn');
+
+    if(selectedIndex === q.answer) {
+        buttons[selectedIndex].classList.add('correct');
+        score += 10;
+        currentStreak++;
+        if(currentStreak > maxStreak) maxStreak = currentStreak;
+    } else {
+        buttons[selectedIndex].classList.add('wrong');
+        buttons[q.answer].classList.add('correct');
+        currentStreak = 0;
+    }
+
+    // Disable all options
+    buttons.forEach(btn => btn.disabled = true);
+
+    // Update stats
+    document.getElementById('score-display').innerText = score;
+    document.getElementById('current-streak').innerText = currentStreak;
+    document.getElementById('max-streak').innerText = maxStreak;
+
+    // Show Explanation
+    document.getElementById('explanation-text').innerText = q.explanation;
+    document.getElementById('explanation-box').style.display = 'block';
+
+    document.getElementById('next-btn').disabled = false;
+}
+
+function nextQuestion() {
+    currentQIndex++;
+    if(currentQIndex < questions.length) {
+        loadQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    clearInterval(timerInterval);
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('results-screen').style.display = 'block';
+
+    const mins = Math.floor(timerSeconds / 60);
+    const secs = timerSeconds % 60;
+
+    document.getElementById('final-stats').innerText = `Selamat ${currentUser}, Anda telah menyelesaikan modul ujian IBO!`;
+    document.getElementById('score-breakdown').innerHTML = `
+        <p>Skor Akhir: <strong>${score}</strong> / ${questions.length * 10}</p>
+        <p>Max Streak: <strong>🔥 ${maxStreak}</strong></p>
+        <p>Waktu Total: <strong>${mins} menit ${secs} detik</strong></p>
+    `;
+}
+</script>
+</body>
+</html>
